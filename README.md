@@ -1,4 +1,6 @@
 druap-system
 ============
 
-durap framework system dir
+system directory of durap framework
+
+https://github.com/doujiang24/durap
