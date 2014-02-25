@@ -63,8 +63,7 @@ function _M.keepalive(self)
     end
     local ok, err = conn:set_keepalive(config.idle_timeout, config.max_keepalive)
     if not ok then
-        log_error("failed to set redis keepalive, turn to close, error: ", err)
-        return close(self)
+        log_error("failed to set redis keepalive: ", err)
     end
 end
 
