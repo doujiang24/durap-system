@@ -13,6 +13,9 @@ local insert = table.insert
 
 local _M = { _VERSION = '0.01' }
 
+local commands = {
+    'subscribe', 'psubscribe', 'unsubscribe', 'punsubscribe',
+}
 
 local mt = { __index = _M }
 
@@ -43,23 +46,25 @@ function _M.connect(self, config)
     return red
 end
 
-function _M.close(self)
+function close(self)
     local conn = self.conn
     local ok, err = conn:close()
     if not ok then
         log_error("failed to close redis: ", err)
     end
 end
+_M.close = close
 
 function _M.keepalive(self)
     local conn, config = self.conn, self.config
     if not config.idle_timeout or not config.max_keepalive then
         log_error("not set idle_timeout and max_keepalive in config; turn to close")
-        return _M.close(self)
+        return close(self)
     end
     local ok, err = conn:set_keepalive(config.idle_timeout, config.max_keepalive)
     if not ok then
-        log_error("failed to set redis keepalive: ", err)
+        log_error("failed to set redis keepalive, turn to close, error: ", err)
+        return close(self)
     end
 end
 
@@ -85,6 +90,35 @@ function _M.commit_pipeline(self)
         end
     end
     return ret
+end
+
+for i = 1, #commands do
+    local cmd = commands[i]
+
+    _M[cmd] =
+        function (self, ...)
+            local conn = self.conn
+            local res, err = conn[cmd](conn, ...)
+            if not res then
+                log_error("failed to query pubsub command redis, error:", err, "operater:", cmd, channel, another, ...)
+            end
+
+            local nch = select("#", ...)
+            if 1 == nch then
+                return res, err
+            end
+
+            local results = { res }
+            for i = 1, nch - 1 do
+                local res, err = conn:read_reply()
+                if not res then
+                    log_error("failed to read_reply for pubsub command redis, error:", err, "operater:", cmd, channel, another, ...)
+                end
+                results[#results + 1] = res
+            end
+
+            return results, err
+        end
 end
 
 local class_mt = {
