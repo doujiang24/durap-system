@@ -27,19 +27,25 @@ function _M.in_tbl(value, tbl)
     return nil
 end
 
-function _M.copy(tbl)
+function copy(tbl)
     local ret = {}
     for k, v in pairs(tbl) do
-        ret[k] = v
+        if "table" == type(v) then
+            ret[k] = copy(v)
+        else
+            ret[k] = v
+        end
     end
     return ret
 end
+_M.copy = copy
 
 -- append: append tbl2 to tbl1 when is true; default nil
+-- tbl1, tbl2 should not be mix hash table
 function _M.merge(tbl1, tbl2, append)
     local ret = tbl1
     if not append then
-        ret = _M.copy(tbl1)
+        ret = copy(tbl1)
     end
 
     for k, v in pairs(tbl2) do

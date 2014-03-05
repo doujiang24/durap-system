@@ -19,6 +19,8 @@ local ngx_var = ngx.var
 local ngx_log = ngx.log
 local ngx_err = ngx.ERR
 
+local default_level = require("core.config").debug
+local log_file = require("core.config").log_file
 
 local _M = { _VERSION = '0.01' }
 
@@ -42,12 +44,12 @@ local mt = { __index = _M }
 function _M.init(self)
     local dp = get_instance()
     local conf = dp.loader:config('core')
-    local debug_level = conf and conf.debug or 'DEBUG'
+    local debug_level = conf and conf.debug or default_level
     local log_level = self[debug_level]
 
     return setmetatable({
         log_level = log_level,
-        log_file = dp.APPPATH .. "logs/error.log"
+        log_file = dp.APPPATH .. log_file,
     }, mt)
 end
 
@@ -106,7 +108,7 @@ function _M.log(self, log_level, ...)
     local phase = get_phase()
 
     local request_info = "\nphase: " .. phase
-    if "init" ~= phase and "timer" ~= get_phase() then
+    if "init" ~= phase and "timer" ~= phase then
         request_info = concat({
             request_info,
             "host: " .. ngx_var.host,
