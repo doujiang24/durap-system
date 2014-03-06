@@ -146,10 +146,25 @@ local function _get_form_data(self)
     return ret
 end
 
+local function headers(self, key)
+    if not self.header_vars then
+        self.header_vars = get_headers()
+    end
+
+    if key then
+        return self.header_vars[key]
+    else
+        return self.header_vars
+    end
+end
+_M.headers = headers
+
 local function _get_post_args(self)
     self.post_vars = {}
     if "POST" == ngx_var.request_method then
         local header = headers(self, 'Content-Type')
+
+        print(header)
 
         if header == "application/x-www-form-urlencoded" then
             read_body()
@@ -184,19 +199,6 @@ function _M.upload_files(self, files, base_path)
     self.base_path = base_path
 end
 
-function headers(self, key)
-    if not self.header_vars then
-        self.header_vars = get_headers()
-    end
-
-    if key then
-        return self.header_vars[key]
-    else
-        return self.header_vars
-    end
-end
-_M.headers = headers
-
 function _M.get(self, key)
     local get_vars = self.get_vars or _get_uri_args(self)
     if key then
@@ -205,7 +207,7 @@ function _M.get(self, key)
     return get_vars
 end
 
-function _M.post(self, key)
+local function post(self, key)
     local post_vars = self.post_vars or _get_post_args(self)
 
     if key then
@@ -213,12 +215,13 @@ function _M.post(self, key)
     end
     return post_vars
 end
+_M.post = post
 
 function _M.input(self, key)
     if not self.input_vars then
-        local vars = _M.get(self)
-        local post = _M.post(self)
-        for k, v in pairs(post) do
+        local vars = get_uri_args()
+        local posts = post(self)
+        for k, v in pairs(posts) do
             vars[k] = v
         end
         self.input_vars = vars

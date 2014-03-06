@@ -9,6 +9,7 @@ local setmetatable = setmetatable
 local unpack = unpack
 local get_instance = get_instance
 local insert = table.insert
+local select = select
 
 
 local _M = { _VERSION = '0.01' }
@@ -99,7 +100,7 @@ for i = 1, #commands do
             local conn = self.conn
             local res, err = conn[cmd](conn, ...)
             if not res then
-                log_error("failed to query pubsub command redis, error:", err, "operater:", cmd, channel, another, ...)
+                log_error("failed to query pubsub command redis, error:", err, "operater:", cmd, ...)
             end
 
             local nch = select("#", ...)
@@ -111,7 +112,7 @@ for i = 1, #commands do
             for i = 1, nch - 1 do
                 local res, err = conn:read_reply()
                 if not res then
-                    log_error("failed to read_reply for pubsub command redis, error:", err, "operater:", cmd, channel, another, ...)
+                    log_error("failed to read_reply for pubsub command redis, error:", err, "operater:", cmd, ...)
                 end
                 results[#results + 1] = res
             end

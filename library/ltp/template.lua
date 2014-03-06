@@ -14,6 +14,8 @@
 -- limitations under the License.
 --
 
+local loadfile = loadfile
+local _G = _G
 local ltp = require('library.ltp.util')
 
 local function compile_template_to_table(result, data, start_lua, end_lua)

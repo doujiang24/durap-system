@@ -29,7 +29,7 @@ local default_ctr = config.default_ctr
 
 local mt = { __index = _M }
 
-function get_segments(self)
+local function get_segments(self)
     if not self.segments then
         local str = self.uri
         local from, to, err = re_find(str, "\\?", "jo")
@@ -54,7 +54,7 @@ function _M.new(self)
     }, mt)
 end
 
-function _route(self)
+local function _route(self)
     local loader, segments = self.loader, get_segments(self)
     local conf = loader:config('core')
     default_ctr = conf and conf.default_ctr or default_ctr
@@ -93,7 +93,7 @@ function _route(self)
     get_instance().debug:log_info("router failed")
 end
 
-function _run(func, ...)
+local function _run(func, ...)
     if func then
         return func(...)
     end

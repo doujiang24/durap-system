@@ -27,7 +27,7 @@ function _M.in_tbl(value, tbl)
     return nil
 end
 
-function copy(tbl)
+local function copy(tbl)
     local ret = {}
     for k, v in pairs(tbl) do
         if "table" == type(v) then
