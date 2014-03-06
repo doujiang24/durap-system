@@ -4,6 +4,11 @@ local pairs = pairs
 local insert = table.insert
 local type = type
 
+local ok, new_tab = pcall(require, "table.new")
+if not ok then
+    new_tab = function (narr, nrec) return {} end
+end
+
 
 local _M = { _VERSION = '0.01' }
 
@@ -85,6 +90,15 @@ function _M.values(tbl, key)
     end
 
     return ret
+end
+
+function _M.array_to_hash(t)
+    local n = #t
+    local h = new_tab(0, n / 2)
+    for i = 1, n, 2 do
+        h[t[i]] = t[i + 1]
+    end
+    return h
 end
 
 return _M

@@ -15,4 +15,6 @@ _M.default_ctr = "index"
 -- form upload
 _M.chunk_size = 8096
 
+_M.HTTP_RAW_POST_KEY = "HTTP_RAW_POST_KEY"
+
 return _M

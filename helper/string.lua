@@ -8,6 +8,13 @@ local insert = table.insert
 local concat = table.concat
 local type = type
 local regsub = ngx.re.gsub
+local random = math.random
+
+local ok, uuid = pcall(require, "resty.uuid")
+if not ok then
+    uuid = {}
+    uuid.generate = function () return time() .. random(1000, 9999) end
+end
 
 
 local _M = { _VERSION = '0.01' }
@@ -72,6 +79,14 @@ function _M.strtr(s, from, to)
         end
     end
     return concat(ret)
+end
+
+function _M.uniqid()
+    local id = uuid.generate()
+    local pref = regsub(id, "-[^-]+$", "")
+    local short = regsub(pref, "-", "")
+    print(pref, short)
+    return short
 end
 
 return _M
