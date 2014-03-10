@@ -3,33 +3,45 @@
 local upload = require "resty.upload"
 local config = require "core.config"
 local stringhelper = require "helper.string"
+local filehelper = require "helper.file"
 
 local ngx = ngx
 local ngx_var = ngx.var
-local ngx_header = ngx.header
-
-local setmetatable = setmetatable
 
 local get_instance = get_instance
 local read_body = ngx.req.read_body
 local get_headers = ngx.req.get_headers
 local get_uri_args = ngx.req.get_uri_args
 local get_post_args = ngx.req.get_post_args
+local setmetatable = setmetatable
 local pairs = pairs
 local type = type
 local io_open = io.open
 local match = string.match
 local uniqid = stringhelper.uniqid
+local detect = filehelper.detect
 local req_socket = ngx.req.socket
-local recieve_timeout = 3000
 
 
 local _M = { _VERSION = '0.01' }
 
 local chunk_size = config.chunk_size
+local recieve_timeout = config.recieve_timeout
 local HTTP_RAW_POST_KEY = config.HTTP_RAW_POST_KEY -- "HTTP_RAW_DATA"
 
 local mt = { __index = _M }
+
+
+local function _newfile(path, name)
+    local file, err = io_open(path .. name, 'w')
+
+    if not file then
+        get_instance().debug:log_error( 'failed to new file:',
+            path .. name, " error:",  err)
+    end
+
+    return file, name, path
+end
 
 local function _get_uri_args(self)
     self.get_vars = get_uri_args()
@@ -43,24 +55,18 @@ end
 _M.ip_address = ip_address
 
 local function _save_raw_file(self)
-    local base_path, form_files, ret = self.base_path, self.form_files, {}
-    local savename = form_files and form_files[HTTP_RAW_POST_KEY] or nil
+    local base_path, save_files, ret = self.base_path, self.save_files, {}
+    local savename = not save_files and uniqid() or save_files[HTTP_RAW_POST_KEY]
 
     if not base_path or not savename then
         return ret
     end
 
-    local filesize = 0
-    local file, err = io_open(base_path .. savename, 'w')
-    if not file then
-        get_instance().debug:log_error(
-            'failed to open file for save raw data:',
-            base_path .. savename, " error:",  err)
-    end
+    local filesize, file = 0, nil
 
     local sock, err = req_socket()
     if not sock then
-        get_instance().debug:log_info('failed to recieve raw post data, err:', err)
+        get_instance().debug:log_error('failed to init request socket, err:', err)
         return ret
     end
     sock:settimeout(recieve_timeout)
@@ -69,24 +75,31 @@ local function _save_raw_file(self)
         local data, err, partial = sock:receive(chunk_size)
 
         if err and err ~= 'closed' then
-            get_instance().debug:log_info('fail to recieve raw post data, err:', err)
+            get_instance().debug:log_error('fail to recieve raw post data, err:', err)
             file:close()
             return ret
-
-        elseif partial then
-            filesize = filesize + #partial
-            file:write(partial)
         end
 
-        if data then
-            filesize = filesize + #data
-            file:write(data)
+        local chunk = data or partial
+        if chunk then
+            if not file then
+                file, savename = _newfile(base_path, savename .. "." .. detect(chunk))
 
-        else
+                if not file then
+                    return ret
+                end
+            end
+
+            filesize = filesize + #chunk
+            file:write(chunk)
+        end
+
+        if not data then
             file:close()
             break
         end
     end
+
     ret[HTTP_RAW_POST_KEY] = {
         savename = savename,
         filesize = filesize,
@@ -95,14 +108,14 @@ local function _save_raw_file(self)
 end
 
 local function _get_form_data(self)
-    local base_path, form_files, ret = self.base_path, self.form_files, {}
+    local base_path, save_files, ret = self.base_path, self.save_files, {}
 
     local form, err = upload:new(chunk_size)
     if not form then
         get_instance().debug:log_info("failed to new upload: ", err)
         return ret
     end
-    form:set_timeout(recieve_timeout) -- 3 sec
+    form:set_timeout(recieve_timeout)
 
     local key, value, filename, filetype, filesize, savename, filesuffix
     while true do
@@ -128,18 +141,12 @@ local function _get_form_data(self)
 
             -- upload file
             if filename and filetype then
-                savename = not form_files and uniqid() or form_files[key]
+                savename = not save_files and uniqid() or save_files[key]
 
                 -- save file to disk
                 if savename and base_path then
                     savename = savename .. (filesuffix or '')
-                    value, err = io_open(base_path .. savename, 'w')
-
-                    if not value then
-                        get_instance().debug:log_error(
-                            'failed to open file for save file:',
-                            base_path .. savename, " error:",  err)
-                    end
+                    value = _newfile(base_path, savename)
 
                 else
                     value = nil
@@ -242,14 +249,14 @@ function _M.new(self)
         input_vars = nil,
         header_vars = nil,
         base_path = nil,
-        form_files = {},
+        save_files = {},
     }
     return setmetatable(res, mt)
 end
 
-function _M.save_form_files(self, base_path, files)
+function _M.set_save_files(self, base_path, files)
     self.base_path = base_path
-    self.form_files = files
+    self.save_files = files
 end
 
 function _M.get(self, key)

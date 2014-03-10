@@ -85,7 +85,6 @@ function _M.uniqid()
     local id = uuid.generate()
     local pref = regsub(id, "-[^-]+$", "")
     local short = regsub(pref, "-", "")
-    print(pref, short)
     return short
 end
 

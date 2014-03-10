@@ -13,7 +13,8 @@ _M.remap_func = "_remap"
 _M.default_ctr = "index"
 
 -- form upload
-_M.chunk_size = 8096
+_M.chunk_size = 8096        -- 8k
+_M.recieve_timeout = 3000   -- 3s
 
 _M.HTTP_RAW_POST_KEY = "HTTP_RAW_POST_KEY"
 

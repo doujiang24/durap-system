@@ -14,10 +14,28 @@ local concat = table.concat
 local rename = os.rename
 local remove = os.remove
 local time = ngx.time
+local ipairs = ipairs
+local sub = string.sub
 
 
 local _M = { _VERSION = '0.01' }
 
+local magics = {
+    { "\137PNG", 'png' },
+    { "GIF87a", 'gif' },
+    { "GIF89a", 'gif' },
+    { "\255\216\255\224\0\16\74\70\73\70\0", 'jpg' },
+    { "\255\216\255\225\19\133\69\120\105\102\0", 'jpg' },  -- JPEG Exif
+}
+
+function _M.detect(str)
+    for _i, v in ipairs(magics) do
+        if v[1] == sub(str, 1, #v[1]) then
+            return v[2]
+        end
+    end
+    return "tmp"
+end
 
 function _M.tmpname(filename)
     return time() .. filename
