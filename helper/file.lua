@@ -37,10 +37,6 @@ function _M.detect(str)
     return "tmp"
 end
 
-function _M.tmpname(filename)
-    return time() .. filename
-end
-
 function _M.move(source, dest)
     local ok, err = rename(source, dest)
     if not ok then

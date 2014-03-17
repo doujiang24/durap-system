@@ -40,18 +40,19 @@ local function encode(status, data, errmsg, errno, extra, ...)
     return json_encode(ret)
 end
 
-function _M.json(status, ...)
+local function json(status, ...)
     say(encode(status, ...))
     return status == 1 and true or nil
 end
+_M.json = json
 
 function _M.json_error(errmsg, errno, ...)
-    _M.json(0, nil, errmsg, errno, ...)
+    json(0, nil, errmsg, errno, ...)
     get_instance().debug:log_debug(errmsg)
 end
 
 function _M.json_data(data)
-    return _M.json(1, data, '', 0)
+    return json(1, data, '', 0)
 end
 
 function _M.json_callback(callback, status, ...)

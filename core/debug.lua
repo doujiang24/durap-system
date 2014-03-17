@@ -24,20 +24,19 @@ local log_file = require("core.config").log_file
 
 local _M = { _VERSION = '0.01' }
 
-
-_M.DEBUG = 1
-_M.INFO = 2
-_M.NOTICE = 3
-_M.WARN = 4
-_M.ERR = 5
-
-local level_str = {
+local levels = {
     'DEBUG',
     'INFO',
     'NOTICE',
     'WARN',
-    'ERR'
+    'ERR',
+    'CRIT',
+    'ALERT',
 }
+
+for i, l in ipairs(levels) do
+    _M[l] = i
+end
 
 local mt = { __index = _M }
 
@@ -100,7 +99,7 @@ function _M.log(self, log_level, ...)
     end
 
     local log_vars = {
-        time() .. ", " .. level_str[log_level],
+        time() .. ", " .. levels[log_level],
         concat(args, ", \n"),
         traceback(),
     }
@@ -139,6 +138,14 @@ end
 
 function _M.log_error(self, ...)
     return _M.log(self, _M.ERR, ...)
+end
+
+function _M.log_crit(self, ...)
+    return _M.log(self, _M.CRIT, ...)
+end
+
+function _M.log_alert(self, ...)
+    return _M.log(self, _M.ALERT, ...)
 end
 
 return _M

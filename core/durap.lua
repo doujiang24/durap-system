@@ -17,9 +17,9 @@ local _M = { _VERSION = '0.01' }
 
 local mt = { __index = _M }
 
-function _M.init(self, level)
-    local APPNAME = ngx_var.APPNAME
-    local APPPATH = ngx_var.ROOT .. ngx_var.APPNAME .. "/"
+function _M.init(self, root, appname)
+    local APPNAME = appname or ngx_var.APPNAME
+    local APPPATH = (root or ngx_var.ROOT) .. APPNAME .. "/"
 
     local dp = setmetatable({
         APPNAME = APPNAME,

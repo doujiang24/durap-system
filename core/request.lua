@@ -62,7 +62,7 @@ local function _save_raw_file(self)
         return ret
     end
 
-    local filesize, file = 0, nil
+    local size, file = 0, nil
 
     local sock, err = req_socket()
     if not sock then
@@ -90,7 +90,7 @@ local function _save_raw_file(self)
                 end
             end
 
-            filesize = filesize + #chunk
+            size = size + #chunk
             file:write(chunk)
         end
 
@@ -102,7 +102,7 @@ local function _save_raw_file(self)
 
     ret[HTTP_RAW_POST_KEY] = {
         savename = savename,
-        filesize = filesize,
+        size = size,
     }
     return ret
 end
@@ -117,7 +117,7 @@ local function _get_form_data(self)
     end
     form:set_timeout(recieve_timeout)
 
-    local key, value, filename, filetype, filesize, savename, filesuffix
+    local key, value, filename, filetype, size, savename
     while true do
         local typ, res, err = form:read()
         if not typ then
@@ -131,9 +131,6 @@ local function _get_form_data(self)
             if res[1] == "Content-Disposition" then
                 key = match(res[2], "name=\"(.-)\"")
                 filename = match(res[2], "filename=\"(.-)\"")
-                if filename then
-                    filesuffix = match(filename, ".-(.[^.]*)$")
-                end
 
             elseif res[1] == "Content-Type" then
                 filetype = res[2]
@@ -145,8 +142,8 @@ local function _get_form_data(self)
 
                 -- save file to disk
                 if savename and base_path then
-                    savename = savename .. (filesuffix or '')
-                    value = _newfile(base_path, savename)
+                    value, savename = _newfile(base_path,
+                        savename .. ( match(filename, ".-(.[^.]*)$") or '' ) )
 
                 else
                     value = nil
@@ -163,7 +160,7 @@ local function _get_form_data(self)
 
             if type(value) == "userdata" then
                 value:write(res)
-                filesize = (filesize or 0) + #res
+                size = (size or 0) + #res
 
             elseif value then
                 value = value .. res
@@ -178,7 +175,7 @@ local function _get_form_data(self)
                     filename = filename,
                     savename = savename,
                     filetype = filetype,
-                    filesize = filesize
+                    size = size
                 }
 
             else
@@ -194,7 +191,7 @@ local function _get_form_data(self)
                 end
             end
 
-            key, value, filename, filetype, filesize, savename = nil, nil, nil, nil, nil
+            key, value, filename, filetype, size, savename = nil, nil, nil, nil, nil
 
         elseif typ == "eof" then
             break
