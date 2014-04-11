@@ -1,4 +1,4 @@
--- Copyright (C) 2013 doujiang24, MaMa Inc.
+-- Copyright (C) Dejiang Zhu (doujiang24)
 
 local tablhelper = require "helper.table"
 local urlhelper = require "helper.url"

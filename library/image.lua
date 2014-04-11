@@ -1,4 +1,4 @@
--- Copyright (C) 2013 doujiang24, MaMa Inc.
+-- Copyright (C) Dejiang Zhu (doujiang24)
 -- this library based on lua-gd, install first : https://github.com/ittner/lua-gd
 
 local gd = require "gd"
