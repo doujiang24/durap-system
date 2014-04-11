@@ -49,7 +49,7 @@ function _M.new(self)
     return setmetatable({
         loader = dp.loader,
         apppath = dp.APPPATH,
-        uri = ngx_var.router_uri,
+        uri = ngx_var.uri,
         segments = nil
     }, mt)
 end
