@@ -29,33 +29,23 @@ local default_ctr = config.default_ctr
 
 local mt = { __index = _M }
 
-local function get_segments(self)
-    if not self.segments then
-        local str = self.uri
-        local from, to, err = re_find(str, "\\?", "jo")
-        if from then
-            str = str_sub(str, 1, from - 1)
-        end
-
-        self.segments = split(strip(str, "/"), "/")
+local function _get_segments()
+    local str = ngx_var.uri
+    local from, to, err = re_find(str, "\\?", "jo")
+    if from then
+        str = str_sub(str, 1, from - 1)
     end
-    return self.segments
+
+    return split(strip(str, "/"), "/")
 end
-_M.get_segments = get_segments
+_M.get_segments = _get_segments
 
 function _M.new(self)
-    local dp = get_instance()
-
-    return setmetatable({
-        loader = dp.loader,
-        apppath = dp.APPPATH,
-        uri = ngx_var.uri,
-        segments = nil
-    }, mt)
+    return setmetatable(_M, { __index = get_instance() })
 end
 
 local function _route(self)
-    local loader, segments = self.loader, get_segments(self)
+    local loader, segments = self.loader, _get_segments()
     local conf = loader:config('core')
     default_ctr = conf and conf.default_ctr or default_ctr
 
@@ -105,7 +95,7 @@ function _M.run(self)
 end
 
 function _M.get_uri(self)
-    local segments = get_segments(self)
+    local segments = _get_segments(self)
     return concat(segments, "/")
 end
 

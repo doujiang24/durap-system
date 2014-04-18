@@ -19,33 +19,23 @@ local ltp_load_template = ltp.load_template
 local ltp_execute_template = ltp.execute_template
 
 local _G = _G
+local cache_module = {}
 
 
 local _M = { _VERSION = '0.01' }
 
 
-local mt = { __index = _M }
-
-
-local cache_module = {}
-
-
 function _M.new(self)
-    local dp = get_instance()
-    local res = {
-        appname = dp.APPNAME,
-        apppath = dp.APPPATH
-    }
-    return setmetatable(res, mt)
+    return setmetatable(_M, { __index = get_instance() })
 end
 
 local function _get_cache(self, module)
-    local appname = self.appname
+    local appname = self.APPNAME
     return cache_module[appname] and cache_module[appname][module]
 end
 
 local function _set_cache(self, name, val)
-    local appname = self.appname
+    local appname = self.APPNAME
     if not cache_module[appname] then
         cache_module[appname] = {}
     end
@@ -57,7 +47,7 @@ local function _load_module(self, dir, name)
     local cache = _get_cache(self, file)
     if cache == nil then
         local module = false
-        local filename = self.apppath .. file .. ".lua"
+        local filename = self.APPPATH .. file .. ".lua"
         if fexists(filename) then
             module = setmetatable({}, { __index = _G })
             assert(pcall(setfenv(assert(loadfile(filename)), module)))
@@ -93,7 +83,7 @@ local function _ltp_function(self, tpl)
     local cache = _get_cache(self, tpl)
     if cache == nil then
         local tplfun = false
-        local filename = self.apppath .. tpl
+        local filename = self.APPPATH .. tpl
         if fexists(filename) then
             local fdata = fread_all(filename)
             tplfun = ltp_load_template(fdata, '<?lua','?>')

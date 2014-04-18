@@ -41,19 +41,11 @@ end
 local mt = { __index = _M }
 
 function _M.init(self)
-    local dp = get_instance()
-    local conf = dp.loader:config('core')
-    local debug_level = conf and conf.debug or default_level
-    local log_level = self[debug_level]
-
-    return setmetatable({
-        log_level = log_level,
-        log_file = dp.APPPATH .. log_file,
-    }, mt)
+    return setmetatable(_M, { __index = get_instance() })
 end
 
 local function _log(self, log)
-    local file = self.log_file
+    local file = self.APPPATH .. log_file
 
     local fp, err = io_open(file, "a")
     if not fp then
@@ -70,9 +62,12 @@ local function _log(self, log)
     fp:close()
 end
 
-function _M.log(self, log_level, ...)
-    local level = self.log_level
-    if log_level < level then
+function _M.log(self, level, ...)
+    local conf = get_instance().loader:config('core')
+    local debug_level = conf and conf.debug or default_level
+    local log_level = _M[debug_level]
+
+    if level < log_level then
         return
     end
 
@@ -99,7 +94,7 @@ function _M.log(self, log_level, ...)
     end
 
     local log_vars = {
-        time() .. ", " .. levels[log_level],
+        time() .. ", " .. levels[level],
         concat(args, ", \n"),
         traceback(),
     }

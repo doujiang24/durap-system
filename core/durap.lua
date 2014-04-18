@@ -1,33 +1,18 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local ngx = ngx -- only for ngx.ctx
-local ngx_var = ngx.var
-
 local request = require "core.request"
 local loader = require "core.loader"
 local debug = require "core.debug"
 local session = require "core.session"
+local router = require "core.router"
 
 local setmetatable = setmetatable
-local get_instance = get_instance
+local ngx_var = ngx.var
+local ngx = ngx -- only for ngx.ctx
 
 
 local _M = { _VERSION = '0.01' }
 
-
-local mt = { __index = _M }
-
-function _M.init(self, root, appname)
-    local APPNAME = appname or ngx_var.APPNAME
-    local APPPATH = (root or ngx_var.ROOT) .. APPNAME .. "/"
-
-    local dp = setmetatable({
-        APPNAME = APPNAME,
-        APPPATH = APPPATH
-    }, mt)
-    ngx.ctx.dp = dp
-    return dp
-end
 
 local function _auto_load(table, key)
     local val = nil
@@ -42,11 +27,28 @@ local function _auto_load(table, key)
 
     elseif key == "session" then
         val = session:init()
+
+    elseif key == "router" then
+        val = router:new()
     end
 
-    local dp = get_instance()
-    dp[key] = val
+    table[key] = val
     return val
+end
+
+local mt = { __index = _auto_load }
+
+
+function _M.init(self, root, appname)
+    local APPNAME = appname or ngx_var.APPNAME
+    local APPPATH = (root or ngx_var.ROOT) .. APPNAME .. "/"
+
+    local dp = setmetatable({
+        APPNAME = APPNAME,
+        APPPATH = APPPATH
+    }, mt)
+    ngx.ctx.dp = dp
+    return dp
 end
 
 local class_mt = {
