@@ -9,6 +9,7 @@ local concat = table.concat
 local type = type
 local regsub = ngx.re.gsub
 local random = math.random
+local time = ngx.time
 
 local ok, uuid = pcall(require, "resty.uuid")
 if not ok then

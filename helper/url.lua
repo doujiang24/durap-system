@@ -4,6 +4,7 @@ local ngx_header = ngx.header
 
 local get_instance = get_instance
 local exit = ngx.exit
+local ngx_var = ngx.var
 local re_match = ngx.re.match
 local ngx_redirect = ngx.redirect
 local escape_uri = ngx.escape_uri
@@ -11,7 +12,6 @@ local pairs = pairs
 local type = type
 local insert = table.insert
 local concat = table.concat
-local encode_args = ngx.encode_args
 
 local HTTP_MOVED_TEMPORARILY = ngx.HTTP_MOVED_TEMPORARILY
 
@@ -19,9 +19,15 @@ local HTTP_MOVED_TEMPORARILY = ngx.HTTP_MOVED_TEMPORARILY
 local _M = { _VERSION = '0.01' }
 
 
+_M.encode_args = ngx.encode_args
+
 function _M.site_url(url)
-    local host = get_instance().request.host
-    return re_match(url, "^\\w+://", "i") and url or "http://" .. host .. "/" .. url
+    if re_match(url, "^\\w+://", "i") then
+        return url
+    end
+
+    local host = ngx_var.host
+    return "http://" .. host .. "/" .. url
 end
 
 function _M.redirect(url, status)
@@ -29,8 +35,6 @@ function _M.redirect(url, status)
     local url, status = _M.site_url(url), status or HTTP_MOVED_TEMPORARILY
     return ngx_redirect(url, status)
 end
-
-_M.gen_args = encode_args
 
 function _M.root_domain(domain)
     if type(domain) ~= "string" then
