@@ -1,8 +1,8 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
 local mysql = require "resty.mysql"
-local strhelper = require "helper.string"
-local corehelper = require "helper.core"
+local strhelper = require "system.helper.string"
+local corehelper = require "system.helper.core"
 
 local log_error = corehelper.log_error
 local log_debug = corehelper.log_debug

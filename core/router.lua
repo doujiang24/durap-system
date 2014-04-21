@@ -1,7 +1,7 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local strhelper = require "helper.string"
-local config = require "core.config"
+local strhelper = require "system.helper.string"
+local config = require "system.core.config"
 
 local get_instance = get_instance
 

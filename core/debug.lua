@@ -1,6 +1,6 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local strhelper = require "helper.string"
+local strhelper = require "system.helper.string"
 local cjson = require "cjson"
 
 local traceback = debug.traceback
@@ -19,8 +19,8 @@ local ngx_var = ngx.var
 local ngx_log = ngx.log
 local ngx_err = ngx.ERR
 
-local default_level = require("core.config").debug
-local log_file = require("core.config").log_file
+local default_level = require "system.core.config" .debug
+local log_file = require "system.core.config" .log_file
 
 local _M = { _VERSION = '0.01' }
 

@@ -1,6 +1,6 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local corehelper = require "helper.core"
+local corehelper = require "system.helper.core"
 
 local type = type
 local insert = table.insert

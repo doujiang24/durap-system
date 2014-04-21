@@ -1,6 +1,6 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local utf8 = require "helper.utf8"
+local utf8 = require "system.helper.utf8"
 
 local find = string.find
 local sub = string.sub

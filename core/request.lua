@@ -1,9 +1,9 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
 local upload = require "resty.upload"
-local config = require "core.config"
-local stringhelper = require "helper.string"
-local filehelper = require "helper.file"
+local config = require "system.core.config"
+local stringhelper = require "system.helper.string"
+local filehelper = require "system.helper.file"
 
 local ngx = ngx
 local ngx_var = ngx.var

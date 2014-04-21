@@ -1,10 +1,10 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local request = require "core.request"
-local loader = require "core.loader"
-local debug = require "core.debug"
-local session = require "core.session"
-local router = require "core.router"
+local request = require "system.core.request"
+local loader = require "system.core.loader"
+local debug = require "system.core.debug"
+local session = require "system.core.session"
+local router = require "system.core.router"
 
 local setmetatable = setmetatable
 local ngx_var = ngx.var

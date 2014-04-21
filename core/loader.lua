@@ -1,8 +1,8 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local corehelper = require "helper.core"
-local filehelper = require "helper.file"
-local ltp = require "library.ltp.template"
+local corehelper = require "system.helper.core"
+local filehelper = require "system.helper.file"
+local ltp = require "system.library.ltp.template"
 
 local setmetatable = setmetatable
 local pcall = pcall
@@ -43,16 +43,11 @@ local function _set_cache(self, name, val)
 end
 
 local function _load_module(self, dir, name)
-    local file = dir .. "/" .. name
+    local file = dir .. "." .. name
     local cache = _get_cache(self, file)
     if cache == nil then
-        local module = false
-        local filename = self.APPPATH .. file .. ".lua"
-        if fexists(filename) then
-            module = setmetatable({}, { __index = _G })
-            assert(pcall(setfenv(assert(loadfile(filename)), module)))
-        end
-        _set_cache(self, file, module)
+        local ok, module = pcall(require, self.APPNAME .. "." .. file)
+        _set_cache(self, file, module or false)
         return module
     end
     return cache

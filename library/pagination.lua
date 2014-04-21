@@ -1,7 +1,7 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local tablhelper = require "helper.table"
-local urlhelper = require "helper.url"
+local tablhelper = require "system.helper.table"
+local urlhelper = require "system.helper.url"
 
 local get_instance = get_instance
 

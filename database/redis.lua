@@ -1,7 +1,7 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
 local redis = require "resty.redis"
-local corehelper = require "helper.core"
+local corehelper = require "system.helper.core"
 
 local log_error = corehelper.log_error
 local log_debug = corehelper.log_debug

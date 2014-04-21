@@ -1,9 +1,9 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
 local cjson = require "cjson"
-local corehelper = require "helper.core"
-local urlhelper = require "helper.url"
-local cookielib = require "core.cookie"
+local corehelper = require "system.helper.core"
+local urlhelper = require "system.helper.url"
+local cookielib = require "system.core.cookie"
 local aes = require "resty.aes"
 
 local setmetatable = setmetatable

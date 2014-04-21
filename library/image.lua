@@ -2,7 +2,7 @@
 -- this library based on lua-gd, install first : https://github.com/ittner/lua-gd
 
 local gd = require "gd"
-local corehelper = require "helper.core"
+local corehelper = require "system.helper.core"
 
 local get_instance = get_instance
 local pairs = pairs

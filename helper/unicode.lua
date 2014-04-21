@@ -1,8 +1,8 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local utf8 = require "helper.utf8"
+local utf8 = require "system.helper.utf8"
 local bit = require "bit"
-local numhepler = require "helper.number"
+local numhepler = require "system.helper.number"
 
 local band = bit.band
 local rshift = bit.rshift
