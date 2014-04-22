@@ -7,9 +7,11 @@ local sub = string.sub
 local insert = table.insert
 local concat = table.concat
 local type = type
-local regsub = ngx.re.gsub
+local re_gsub = ngx.re.gsub
 local random = math.random
 local time = ngx.time
+local gsub = string.gsub
+local unescape_uri = ngx.unescape_uri
 
 local ok, uuid = pcall(require, "resty.uuid")
 if not ok then
@@ -61,7 +63,7 @@ function _M.strip_tags(s, allowable_tags)
     if allowable_tags and type(allowable_tags) == "table" then
         pattern = "</?+(?!" .. concat(allowable_tags, "|") .. ")([^>]*?)/?>"
     end
-    return regsub(s, pattern, "", "iux")
+    return re_gsub(s, pattern, "", "iux")
 end
 
 -- Translate certain characters
@@ -84,9 +86,13 @@ end
 
 function _M.uniqid()
     local id = uuid.generate()
-    local pref = regsub(id, "-[^-]+$", "")
-    local short = regsub(pref, "-", "")
+    local pref = re_gsub(id, "-[^-]+$", "")
+    local short = re_gsub(pref, "-", "")
     return short
+end
+
+function _M.rawurldecode(str)
+    return unescape_uri(gsub(str, "+", "%%2B"))
 end
 
 return _M
