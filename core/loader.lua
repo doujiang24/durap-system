@@ -47,6 +47,10 @@ local function _load_module(self, dir, name)
     local cache = _get_cache(self, file)
     if cache == nil then
         local ok, module = pcall(require, self.APPNAME .. "." .. file)
+        if not ok then
+            get_instance().debug:log_debug('failed to load: ', file, ' err: ', module)
+        end
+
         _set_cache(self, file, module or false)
         return module
     end
