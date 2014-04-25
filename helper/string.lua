@@ -11,6 +11,7 @@ local re_gsub = ngx.re.gsub
 local random = math.random
 local time = ngx.time
 local gsub = string.gsub
+local gmatch = string.gmatch
 local unescape_uri = ngx.unescape_uri
 
 local ok, uuid = pcall(require, "resty.uuid")
@@ -18,6 +19,8 @@ if not ok then
     uuid = {}
     uuid.generate = function () return time() .. random(1000, 9999) end
 end
+
+local charlist = "[\t\n\r\0\11]*"
 
 
 local _M = { _VERSION = '0.01' }
@@ -84,6 +87,7 @@ function _M.strtr(s, from, to)
     return concat(ret)
 end
 
+
 function _M.uniqid()
     local id = uuid.generate()
     local pref = re_gsub(id, "-[^-]+$", "")
@@ -91,8 +95,43 @@ function _M.uniqid()
     return short
 end
 
+
 function _M.rawurldecode(str)
     return unescape_uri(gsub(str, "+", "%%2B"))
 end
 
+
+function _M.trim(str)
+    local pref = re_gsub(str, "^" .. charlist, "") or str
+    return re_gsub(pref, charlist .. "$", "") or pref
+end
+
+
+function _M.str_replace(search, replace, str)
+    if type(search) == "string" then
+        return gsub(str, search, replace)
+    end
+
+    local rp_type = type(replace) == "string" and true or nil
+
+    for i = 1, #search do
+        str = gsub(str, search[i], rp_type and replace or replace[i])
+    end
+    return str
+end
+
+function _M.explode(separator, str)
+    local str = str .. separator
+
+    local ret, i = {}, 1
+    for s in gmatch(str, "(.-)" .. separator) do
+        ret[i] = s
+        i = i + 1
+    end
+
+    return ret
+end
+
+
 return _M
+
