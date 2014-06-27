@@ -36,7 +36,7 @@ function _M.set_token(secretkey, args)
 end
 
 function _M.set_token2(secretkey, args, payload)
-    local str = secretkey .. join_args(args)
+    local str = join_args(args) .. secretkey
 
     if payload then
         str = str .. payload
