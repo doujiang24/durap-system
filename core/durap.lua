@@ -45,16 +45,11 @@ function _M.init(self, root, appname)
 
     local dp = setmetatable({
         APPNAME = APPNAME,
-        APPPATH = APPPATH
+        APPPATH = APPPATH,
     }, mt)
     ngx.ctx.dp = dp
     return dp
 end
 
-local class_mt = {
-    __index = _auto_load
-}
-
-setmetatable(_M, class_mt)
-
 return _M
+
