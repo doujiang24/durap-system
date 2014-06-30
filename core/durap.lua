@@ -1,10 +1,13 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local request = require "system.core.request"
-local loader = require "system.core.loader"
-local debug = require "system.core.debug"
-local session = require "system.core.session"
-local router = require "system.core.router"
+local request   = require "system.core.request"
+local loader    = require "system.core.loader"
+local debug     = require "system.core.debug"
+local session   = require "system.core.session"
+local router    = require "system.core.router"
+
+local root_path     = require "dpconfig" .root_path
+local applications  = require "dpconfig" .applications
 
 local setmetatable = setmetatable
 local ngx_var = ngx.var
@@ -39,15 +42,16 @@ end
 local mt = { __index = _auto_load }
 
 
-function _M.init(self, root, appname)
-    local APPNAME = appname or ngx_var.APPNAME
-    local APPPATH = (root or ngx_var.ROOT) .. APPNAME .. "/"
+function _M.init(self, appname)
+    local name  = appname or applications[ngx_var.host] or applications.default
+    local path  = root_path .. name .. "/"
 
-    local dp = setmetatable({
-        APPNAME = APPNAME,
-        APPPATH = APPPATH,
+    local dp    = setmetatable({
+        APPNAME = name,
+        APPPATH = path,
     }, mt)
-    ngx.ctx.dp = dp
+
+    ngx.ctx.dp  = dp
     return dp
 end
 
