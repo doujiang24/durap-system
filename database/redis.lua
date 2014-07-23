@@ -13,12 +13,8 @@ local select = select
 
 
 local _M = { _VERSION = '0.01' }
-
-local commands = {
-    'subscribe', 'psubscribe', 'unsubscribe', 'punsubscribe',
-}
-
 local mt = { __index = _M }
+
 
 function _M.connect(self, config)
     local red = setmetatable({ conn = redis:new(), config = config }, mt);
@@ -92,47 +88,19 @@ function _M.commit_pipeline(self)
     return ret
 end
 
-for i = 1, #commands do
-    local cmd = commands[i]
-
-    _M[cmd] =
-        function (self, ...)
-            local conn = self.conn
-            local res, err = conn[cmd](conn, ...)
-            if not res then
-                log_error("failed to query pubsub command redis, error:", err, "operater:", cmd, ...)
-            end
-
-            local nch = select("#", ...)
-            if 1 == nch then
-                return res, err
-            end
-
-            local results = { res }
-            for i = 1, nch - 1 do
-                local res, err = conn:read_reply()
-                if not res then
-                    log_error("failed to read_reply for pubsub command redis, error:", err, "operater:", cmd, ...)
-                end
-                results[#results + 1] = res
-            end
-
-            return results, err
-        end
-end
-
 local class_mt = {
     __index = function (table, key)
         return function (self, ...)
             local conn = self.conn
             local res, err = conn[key](conn, ...)
-            if not res and err then
-                local args = { ... }
 
+            log_debug(key, ...)
+
+            if not res and err then
                 if "read_reply" == key and "timeout" == err then
                     --log_debug("failed to query redis, error:", err, "operater:", key, unpack(args))
                 else
-                    log_error("failed to query redis, error:", err, "operater:", key, unpack(args))
+                    log_error("failed to query redis, error:", err, "operater:", key, ...)
                 end
 
                 return false, err
