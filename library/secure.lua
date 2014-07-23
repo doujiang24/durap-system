@@ -32,7 +32,7 @@ end
 
 function _M.set_token(secretkey, args)
     local str = secretkey .. join_args(args) .. secretkey
-    return str_upper(md5(str))
+    return str_upper(md5(str)), str
 end
 
 function _M.set_token2(secretkey, args, payload)
@@ -42,7 +42,7 @@ function _M.set_token2(secretkey, args, payload)
         str = str .. payload
     end
 
-    return md5(str)
+    return md5(str), str
 end
 
 
