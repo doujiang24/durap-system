@@ -42,7 +42,7 @@ for my $file (map glob, qw{ *.lua */*.lua */*/*.lua }) {
 
     print "\nChecking use of Lua global variables in file $file ...\n";
 
-    my $escape = 'require|type|tostring|error|ngx|ndk|jit|setmetatable|getmetatable|string|table|io|os|print|tonumber|math|pcall|xpcall|unpack|pairs|ipairs|assert|module|package|coroutine|[gs]etfenv|next|get_instance|_VERSION';
+    my $escape = 'require|type|tostring|error|ngx|ndk|jit|setmetatable|getmetatable|string|table|io|os|print|tonumber|math|pcall|xpcall|unpack|pairs|ipairs|assert|module|package|coroutine|[gs]etfenv|next|get_instance|select|_G|loadfile|debug|_VERSION';
     if ($file =~ /model/) {
         $escape = $escape . "|new";
     }

@@ -80,6 +80,7 @@ local class_mt = {
             local res, err = conn[key](conn, ...)
 
             log_debug(key, ...)
+
             if not res and err then
                 log_error("failed to query ssdb, error:", err, "operater:", key, ...)
                 return nil, err

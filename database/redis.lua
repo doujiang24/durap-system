@@ -16,16 +16,13 @@ local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
 
 
+
 function _M.connect(self, config)
-    local red = setmetatable({ conn = redis:new(), config = config }, mt);
+    local conn = redis:new()
 
-    local conn = red.conn
-    local host = config.host
-    local port = config.port
-    local timeout = config.timeout
+    conn:set_timeout(config.timeout)
 
-    conn:set_timeout(timeout)
-    local ok, err = conn:connect(host, port)
+    local ok, err = conn:connect(config.host, config.port)
 
     if not ok then
         log_error("failed to connect redis: ", err)
@@ -33,36 +30,38 @@ function _M.connect(self, config)
     end
 
     if config.password then
-        local res, err = red:auth(config.password)
+        local res, err = conn:auth(config.password)
         if not res then
             log_error("failed to authenticate: ", err)
             return
         end
     end
 
-    return red
+    return setmetatable({ conn = conn, config = config }, mt)
 end
 
-function close(self)
-    local conn = self.conn
-    local ok, err = conn:close()
-    if not ok then
-        log_error("failed to close redis: ", err)
-    end
-end
-_M.close = close
 
-function _M.keepalive(self)
-    local conn, config = self.conn, self.config
-    if not config.idle_timeout or not config.max_keepalive then
-        log_error("not set idle_timeout and max_keepalive in config; turn to close")
-        return close(self)
-    end
-    local ok, err = conn:set_keepalive(config.idle_timeout, config.max_keepalive)
-    if not ok then
-        log_error("failed to set redis keepalive: ", err)
+local commands = redis.get_commands()
+commands[#commands + 1] = 'init_pipeline'
+commands[#commands + 1] = 'cancel_pipeline'
+
+for i = 1, #commands do
+    local cmd = commands[i]
+    _M[cmd] = function (self, ...)
+        local conn = self.conn
+        local res, err = conn[cmd](conn, ...)
+
+        log_debug(...)
+
+        if not res and err then
+            log_error("failed to query redis, error:", err, "operater:", ...)
+
+            return false, err
+        end
+        return res
     end
 end
+
 
 function _M.commit_pipeline(self)
     local conn, ret = self.conn, {}
@@ -88,28 +87,37 @@ function _M.commit_pipeline(self)
     return ret
 end
 
-local class_mt = {
-    __index = function (table, key)
-        return function (self, ...)
-            local conn = self.conn
-            local res, err = conn[key](conn, ...)
 
-            log_debug(key, ...)
+function _M.read_reply (self, ...)
+    local conn = self.conn
 
-            if not res and err then
-                if "read_reply" == key and "timeout" == err then
-                    --log_debug("failed to query redis, error:", err, "operater:", key, unpack(args))
-                else
-                    log_error("failed to query redis, error:", err, "operater:", key, ...)
-                end
+    log_debug('read_reply', ...)
 
-                return false, err
-            end
-            return res
-        end
+    return conn.read_reply(conn, ...)
+end
+
+
+function close(self)
+    local conn = self.conn
+    local ok, err = conn:close()
+    if not ok then
+        log_error("failed to close redis: ", err)
     end
-}
+end
+_M.close = close
 
-setmetatable(_M, class_mt)
+
+function _M.keepalive(self)
+    local conn, config = self.conn, self.config
+    if not config.idle_timeout or not config.max_keepalive then
+        log_error("not set idle_timeout and max_keepalive in config; turn to close")
+        return close(self)
+    end
+    local ok, err = conn:set_keepalive(config.idle_timeout, config.max_keepalive)
+    if not ok then
+        log_error("failed to set redis keepalive: ", err)
+    end
+end
+
 
 return _M
