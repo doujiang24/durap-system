@@ -97,7 +97,7 @@ function _M.read_reply (self, ...)
 end
 
 
-function close(self)
+local function close(self)
     local conn = self.conn
     local ok, err = conn:close()
     if not ok then

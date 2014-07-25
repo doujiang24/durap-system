@@ -27,7 +27,7 @@ function _M.connect(self, config)
         return
     end
 
-    return setmetatable({ conn = conn, config = config }, mt);
+    return setmetatable({ conn = conn, config = config }, mt)
 end
 
 function close(self)
