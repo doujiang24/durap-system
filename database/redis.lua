@@ -62,6 +62,8 @@ for i = 1, #commands do
     end
 end
 
+_M.array_to_hash = redis.array_to_hash
+
 
 function _M.commit_pipeline(self)
     local conn, ret = self.conn, {}
