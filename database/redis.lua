@@ -51,7 +51,7 @@ for i = 1, #commands do
         local conn = self.conn
         local res, err = conn[cmd](conn, ...)
 
-        log_debug(...)
+        log_debug(cmd, ...)
 
         if not res and err then
             log_error("failed to query redis, error:", err, "operater:", ...)
