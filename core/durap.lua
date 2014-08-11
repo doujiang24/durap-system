@@ -9,33 +9,42 @@ local router    = require "system.core.router"
 local root_path     = require "dpconfig" .root_path
 local applications  = require "dpconfig" .applications
 
-local setmetatable = setmetatable
-local ngx_var = ngx.var
-local ngx = ngx -- only for ngx.ctx
+local setmetatable  = setmetatable
+local ngx_var       = ngx.var
+local ngx           = ngx -- only for ngx.ctx
+
+local cache_module  = {}
+local auto_module   = {
+        debug       = { debug, true },  -- module, cache able?
+        loader      = { loader, true },
+        router      = { router, true },
+        request     = { request, false },
+        session     = { session, false },
+}
 
 
 local _M = { _VERSION = '0.01' }
 
 
-local function _auto_load(table, key)
-    local val = nil
-    if key == "request" then
-        val = request:new()
-
-    elseif key == "debug" then
-        val = debug:init()
-
-    elseif key == "loader" then
-        val = loader:new()
-
-    elseif key == "session" then
-        val = session:init()
-
-    elseif key == "router" then
-        val = router:new()
+local function _auto_load(dp, key)
+    local appname = dp.APPNAME
+    if not cache_module[appname] then
+        cache_module[appname] = {}
     end
 
-    table[key] = val
+    local val = cache_module[appname][key]
+    if not val and auto_module[key] then
+        local module    = auto_module[key][1]
+        local cache     = auto_module[key][2]
+
+        val = module.new()
+
+        if cache then
+            cache_module[appname][key] = val
+        end
+    end
+
+    dp[key] = val
     return val
 end
 
@@ -55,5 +64,5 @@ function _M.init(self, appname)
     return dp
 end
 
-return _M
 
+return _M

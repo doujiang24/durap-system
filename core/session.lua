@@ -57,7 +57,7 @@ local function _get_session(self, str, tolerate_expt)
     return sess
 end
 
-function _M.init(self, conf)
+function _M.new(self, conf)
     local conf = conf or get_instance().loader:config('core')
     local sess_secure_key = conf.sess_secure_key or def_sess_secure_key
     local sess_secure_iv = conf.sess_secure_iv or def_sess_secure_iv

@@ -1,28 +1,26 @@
 -- Copyright (C) Dejiang Zhu (doujiang24)
 
-local strhelper = require "system.helper.string"
-local cjson = require "cjson"
+local cjson         = require "cjson"
 
-local traceback = debug.traceback
-local setmetatable = setmetatable
-local error = error
-local concat = table.concat
-local io_open = io.open
-local unpack = unpack
-local time = ngx.localtime
-local type = type
-local get_instance = get_instance
-local maxn = table.maxn
+local setmetatable  = setmetatable
+local traceback     = debug.traceback
+local concat        = table.concat
+local io_open       = io.open
+local type          = type
+local pcall         = pcall
+local maxn          = table.maxn
+local str_lower     = string.lower
 
-local get_phase = ngx.get_phase
-local ngx_var = ngx.var
-local ngx_log = ngx.log
-local ngx_err = ngx.ERR
+local get_instance  = get_instance
+local time          = ngx.localtime
+local get_phase     = ngx.get_phase
+local ngx_var       = ngx.var
+local ngx_log       = ngx.log
+local ngx_err       = ngx.ERR
 
 local default_level = require "system.core.config" .debug
-local log_file = require "system.core.config" .log_file
+local log_file      = require "system.core.config" .log_file
 
-local _M = { _VERSION = '0.01' }
 
 local levels = {
     'DEBUG',
@@ -34,18 +32,27 @@ local levels = {
     'ALERT',
 }
 
-for i, l in ipairs(levels) do
-    _M[l] = i
+local _M = { _VERSION = '0.01' }
+
+for num, level in ipairs(levels) do
+    _M[level] = num
 end
 
 local mt = { __index = _M }
 
-function _M.init(self)
-    return setmetatable(_M, { __index = get_instance() })
+function _M.new()
+    local dp    = get_instance()
+    local conf  = dp.loader:config('core')
+    local level = conf and conf.debug or default_level
+    local m     = {
+        file    = dp.APPPATH .. log_file,
+        level   = _M[level],
+    }
+    return setmetatable(m, mt)
 end
 
 local function _log(self, log)
-    local file = self.APPPATH .. log_file
+    local file = self.file
 
     local fp, err = io_open(file, "a")
     if not fp then
@@ -62,10 +69,8 @@ local function _log(self, log)
     fp:close()
 end
 
-function _M.log(self, level, ...)
-    local conf = get_instance().loader:config('core')
-    local debug_level = conf and conf.debug or default_level
-    local log_level = _M[debug_level]
+local function log(self, level, ...)
+    local log_level = self.level
 
     if level < log_level then
         return
@@ -114,33 +119,15 @@ function _M.log(self, level, ...)
 
     return _log(self, concat(log_vars, ", \n") .. request_info)
 end
+_M.log = log
 
-function _M.log_debug(self, ...)
-    return _M.log(self, _M.DEBUG, ...)
+
+for num, level in ipairs(levels) do
+    local func = "log_" .. str_lower(level)
+    _M[func] = function(self, ...)
+        return log(self, num, ...)
+    end
 end
 
-function _M.log_info(self, ...)
-    return _M.log(self, _M.INFO, ...)
-end
-
-function _M.log_notice(self, ...)
-    return _M.log(self, _M.NOTICE, ...)
-end
-
-function _M.log_warn(self, ...)
-    return _M.log(self, _M.WARN, ...)
-end
-
-function _M.log_error(self, ...)
-    return _M.log(self, _M.ERR, ...)
-end
-
-function _M.log_crit(self, ...)
-    return _M.log(self, _M.CRIT, ...)
-end
-
-function _M.log_alert(self, ...)
-    return _M.log(self, _M.ALERT, ...)
-end
 
 return _M
