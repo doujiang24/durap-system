@@ -55,11 +55,11 @@ end
 local function query(cluster_id, conn, cmd, ...)
     local res, err = conn[cmd](conn, ...)
 
-    log_debug(cluster_id, cmd, ...)
+    -- log_debug(cluster_id, cmd, ...)
 
     if not res and err then
         if cmd == "commit_pipeline " and err == "no pipeline" then
-            log_debug("failed to commit the pipelined requests: ", err)
+            -- log_debug("failed to commit the pipelined requests: ", err)
         else
             log_error("failed to query redis, error:", err, "operater:", cmd, ...)
         end

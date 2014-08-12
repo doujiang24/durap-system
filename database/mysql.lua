@@ -314,7 +314,7 @@ end
 
 function _M.query(self, sql)
     local conn = self.conn
-    log_debug("log sql:", sql)
+    -- log_debug("log sql:", sql)
 
     local res, err, errno, sqlstate = conn:query(sql)
     if not res then
