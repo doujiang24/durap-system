@@ -27,7 +27,7 @@ local levels = {
     'INFO',
     'NOTICE',
     'WARN',
-    'ERR',
+    'ERROR',
     'CRIT',
     'ALERT',
 }
