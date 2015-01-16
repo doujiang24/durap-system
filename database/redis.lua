@@ -9,12 +9,14 @@ local setmetatable = setmetatable
 local unpack = unpack
 local get_instance = get_instance
 local insert = table.insert
+local str_find = string.find
 local select = select
 
 
 local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
 
+local SCRIPT_CACHE = {}
 
 
 function _M.connect(self, config)
@@ -96,6 +98,41 @@ function _M.read_reply (self, ...)
     -- log_debug('read_reply', ...)
 
     return conn.read_reply(conn, ...)
+end
+
+
+-- optimize for `eval` according to http://redis.io/commands/eval
+-- The client library implementation can always optimistically send EVALSHA
+-- under the hood even when the client actually calls EVAL,
+-- in the hope the script was already seen by the server.
+
+local eval = _M.eval
+
+local function script_load(self, script)
+    local sha, err = self:script("load", script)
+    if sha then
+        SCRIPT_CACHE[script] = sha
+    end
+end
+
+function _M.eval(self, script, ...)
+    local sha = SCRIPT_CACHE[script]
+    if sha then
+        local res, err = self:evalsha(sha, ...)
+        if res then
+            return res
+        end
+
+        if err and #err > 8 and str_find(err, "NOSCRIPT") then
+            script_load(self, script)
+            return eval(self, script, ...)
+        end
+
+        return nil, err
+    end
+
+    script_load(self, script)
+    return eval(self, script, ...)
 end
 
 
