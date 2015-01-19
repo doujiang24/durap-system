@@ -22,7 +22,9 @@ local function join_args(args)
     for _i, k in ipairs(keys) do
         if type(args[k]) == "table" then
             str = str .. k .. join_args(args[k])
-        else
+
+        -- not boolean
+        elseif type(args[k]) ~= "boolean" then
             str = str .. k .. args[k]
         end
     end

@@ -115,6 +115,7 @@ local function script_load(self, script)
     end
 end
 
+-- * CAN NOT * used in pipeline
 function _M.eval(self, script, ...)
     local sha = SCRIPT_CACHE[script]
     if sha then
