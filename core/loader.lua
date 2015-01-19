@@ -79,7 +79,10 @@ end
 
 function _M.model(self, mod, ...)
     local m = _load_module(self, "model", mod)
-    return m and type(m.new) == "function" and m:new(...) or m
+    if m and type(m.new) == "function" then
+        return m:new(...)
+    end
+    return m
 end
 
 
