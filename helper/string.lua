@@ -20,7 +20,9 @@ if not ok then
     uuid.generate = function () return time() .. random(1000, 9999) end
 end
 
-local charlist = "[\t\n\r\0\11]*"
+-- " " (ASCII 32 (0x20)), an ordinary space.
+-- "\x0B" (ASCII 11 (0x0B)), a vertical tab.
+local charlist = "[\t\n\r\32\11]+"
 
 
 local _M = { _VERSION = '0.01' }
