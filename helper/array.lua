@@ -17,5 +17,16 @@ function _M.merge(arr1, arr2)
 end
 
 
+function _M.in_array(needle, arr)
+    for i = 1, #arr do
+        if arr[i] == needle then
+            return true
+        end
+    end
+
+    return false
+end
+
+
 return _M
 
