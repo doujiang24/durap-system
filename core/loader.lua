@@ -60,7 +60,7 @@ local function _load_module(self, dir, name)
             -- get_instance().debug:log_debug('failed to load: ', file, ' err: ', module)
         end
 
-        _set_cache(self, file, module or false)
+        _set_cache(appname, file, module or false)
         return module
     end
     return cache
